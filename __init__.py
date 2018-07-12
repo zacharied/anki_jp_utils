@@ -70,8 +70,6 @@ def jisho_sentences(word, count=20):
                 furigana.decompose()
             sentence_en = sentence_content.find('div', {'class': 'english_sentence'}).find('span', {'class': 'english'})
             sentences.append(LangPair(sentence_jp.text.strip(), sentence_en.text.strip()))
-            :q
-            :q
 
             if len(sentences) == count: return sentences
 
