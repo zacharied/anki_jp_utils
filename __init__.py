@@ -8,7 +8,7 @@ from collections import namedtuple
 
 ANKICONNECT_ADDRESS = 'http://localhost:8765'
 
-JishoSentence = namedtuple('JishoSentence', ['jp', 'en'])
+LangPair = namedtuple('LangPair', ['jp', 'en'])
 
 _re_kanji = re.compile(r'[\u3400-\u4DB5\u4E00-\u9FCB\uF900-\uFA6A]')
 
@@ -28,19 +28,19 @@ def _ac_request_text(action, params):
 
 def ac_check():
     """ Checks for an active connection to AnkiConnect.  """
-    r = requests.get(ANKICONNECT_ADDRESS)
-    if r.status_code != 200:
-        print('Error connecting to AnkiConnect: {}'.format(r.status_code), file=sys.stderr)
+    res = requests.get(ANKICONNECT_ADDRESS)
+    if res.status_code != 200:
+        print('Error connecting to AnkiConnect: {}'.format(res.status_code), file=sys.stderr)
         return False
     return True
 
 def ac_request(action, params):
     """ Send a request to AnkiConnect and return the result. """
     message = _ac_request_text(action, params)
-    r = requests.post(ANKICONNECT_ADDRESS, message)
-    if r.status_code != 200:
-        print('AnkiConnect error {}: {}'.format(r.status_code, r.json()))
-    return json.loads(r.text)
+    res = requests.post(ANKICONNECT_ADDRESS, message)
+    if res.status_code != 200:
+        print('AnkiConnect error {}: {}'.format(res.status_code, res.json()))
+    return json.loads(res.text)
 
 def anki_construct_field(arr):
     """ Print elements of an array, each separated by a newline, with no trailing space. """
@@ -56,20 +56,22 @@ def jisho_sentences(word, count=20):
 
     page = 1
     while page * 20 <= count:
-        r = requests.get('https://jisho.org/search/{} %23sentences?page={}'.format(word, page))
+        res = requests.get('https://jisho.org/search/{} %23sentences?page={}'.format(word, page))
 
-        if r.status_code != 200:
-            print('Error loading sentences from Jisho: {}.'.format(r.status_code), file=sys.stderr)
+        if res.status_code != 200:
+            print('Error loading sentences from Jisho: {}.'.format(res.status_code), file=sys.stderr)
             return sentences
 
-        soup = bs4.BeautifulSoup(r.text, 'html.parser')
+        soup = bs4.BeautifulSoup(res.text, 'html.parser')
 
         for sentence_content in soup.find_all('div', {'class': 'sentence_content'}):
             sentence_jp = sentence_content.find('ul', {'class': 'japanese_sentence'})
             for furigana in sentence_jp.find_all('span', {'class': 'furigana'}):
                 furigana.decompose()
             sentence_en = sentence_content.find('div', {'class': 'english_sentence'}).find('span', {'class': 'english'})
-            sentences.append(JishoSentence(sentence_jp.text.strip(), sentence_en.text.strip()))
+            sentences.append(LangPair(sentence_jp.text.strip(), sentence_en.text.strip()))
+            :q
+            :q
 
             if len(sentences) == count: return sentences
 
@@ -85,12 +87,12 @@ def jisho_kanji_keywords(kanji):
     if _re_kanji.match(kanji) == None:
         raise ValueError('argument must be a kanji character')
 
-    r = requests.get('https://jisho.org/search/{} %23kanji'.format(kanji))
-    if r.status_code != 200:
-        print('Error loading kanji keywords from Jisho: {}.'.format(r.status_code), file=sys.stderr)
+    res = requests.get('https://jisho.org/search/{} %23kanji'.format(kanji))
+    if res.status_code != 200:
+        print('Error loading kanji keywords from Jisho: {}.'.format(res.status_code), file=sys.stderr)
         return None
 
-    soup = bs4.BeautifulSoup(r.text, 'html.parser')
+    soup = bs4.BeautifulSoup(res.text, 'html.parser')
     return soup.find('div', {'class': 'kanji-details__main-meanings'}).text.strip()
 
 def jisho_dictionary_entry(word):
