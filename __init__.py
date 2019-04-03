@@ -48,12 +48,11 @@ def ac_request(action, params):
         print('AnkiConnect error {}: {}'.format(res.status_code, res.json()))
     return json.loads(res.text)
 
-def anki_construct_field(arr):
-    """ Print elements of an array, each separated by a newline, with no trailing space. """
-    if len(arr) == 0: return ""
-    f = arr[0]
-    for x in arr[1:]:
-        f += "\n" + x
+def anki_construct_field(arr, div_class='__ajpu'):
+    """ Print elements of an array separated into divs. """
+    f = ""
+    for x in arr:
+        f += "<div class='{}'>{}</div>".format(div_class, x)
     return f
 
 def jisho_sentences(word, count=20):
