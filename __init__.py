@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import json
 import requests, bs4
@@ -7,6 +8,11 @@ import re
 from collections import namedtuple
 
 ANKICONNECT_ADDRESS = 'http://localhost:8765'
+
+try:
+    ANKICONNECT_ADDRESS = os.environ['ANKICONNECT_ADDRESS']
+except KeyError:
+    pass
 
 LangPair = namedtuple('LangPair', ['jp', 'en'])
 
